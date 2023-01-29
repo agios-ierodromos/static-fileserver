@@ -6,13 +6,32 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+ 
+      # See: https://github.com/marketplace/actions/thinkdolabs-curl
+      - name: Downloads the organization .env file
+        uses: thinkdolabs/curl@v1
+        with:
+          args: --location -o organization.env https://raw.githubusercontent.com/agios-ierodromos/.github/main/.env
+
+      # See: https://github.com/marketplace/actions/environment-variables-from-dotenv
+      - name: Loads environment variables from .env
+        uses: c-py/action-dotenv-to-setenv@v4
+        with:
+          env-file: organization.env
+
+      # See: https://github.com/marketplace/actions/checkout
+      - name: Checkout repository
+        uses: actions/checkout@$v3.3.0
         with:
           fetch-depth: 2
-      - uses: actions/setup-go@v2
+
+      # See: https://github.com/marketplace/actions/setup-go-environment
+      - uses: actions/setup-go@$v3.5.0
         with:
-          go-version: '1.17'
+          go-version: ${{ env.GO_VERSION }}
+
       - name: Run coverage
         run: go test -race -coverprofile=coverage.txt -covermode=atomic
+        
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash)
